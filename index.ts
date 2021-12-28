@@ -2,16 +2,30 @@ import * as dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import {Config} from "./Config/Config";
-import {MailService} from "./Mail/MailService";
-import {MailController} from "./Mail/MailController";
-import {MailControllerBuilder} from "./Mail/MailControllerBuilder";
+import {GmailBuilder} from "./Gmail/Gmail.builder";
+import {MailController} from "./Mail/Mail.controller";
+import {MailListStructure} from "./MailList/MailList.structure";
+import {UnsubscribeController} from "./Unsubscribe/Unsubscribe.controller";
+
+
 
 async function init(){
-    const appSettings = Config.getConfig().getSettings();
-    const mailInstance =await MailControllerBuilder.build(appSettings);
-    await mailInstance.getLists()
-    const mails = mailInstance.emails
+    const gmailService = await GmailBuilder.build();
+    const mailController = new MailController(gmailService);
+    const unsubscribe = new UnsubscribeController();
+
+    // Listens for mail list generated
+    mailController.on("list-generated", (mailList:MailListStructure)=>{
+        unsubscribe.generateCSVFromList(mailList);
+    })
+
+    // Generate list
+    await mailController.generateMailsList();
+
 }
-init();
+
+
+init().then(()=>{
+    console.log("main completed")
+});
 

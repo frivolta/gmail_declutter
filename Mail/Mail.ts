@@ -1,9 +1,13 @@
-export  class Mail {
-    public unsubscribeLink: string;
-    public fromEmailAndAuthor: string;
+export class Mail {
+    public unsubscribeLink: string
+    constructor(public id:string, unsubscribeLink:string, public fromEmailAndAuthor: string) {
+        this.unsubscribeLink = this.sanitazeFields(unsubscribeLink)
+    }
 
-    constructor(unsubscribeLink: string, fromEmailAndAuthor:string) {
-        this.unsubscribeLink = unsubscribeLink;
-        this.fromEmailAndAuthor = fromEmailAndAuthor;
+    private sanitazeFields(unsubscribeLink:string):string{
+        // Convert  '<link>, <link>'::'link'
+        const firstLink = unsubscribeLink.split(",")[0]
+        const sanitizedFirstLink = firstLink.replace("<", "").replace(">","")
+        return sanitizedFirstLink;
     }
 }
